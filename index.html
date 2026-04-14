@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLASH ANIME | Premium Streaming</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f0f0f;
+            color: white;
+            scroll-behavior: smooth;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #e11d48; border-radius: 10px; }
+
+        .anime-card:hover .play-overlay { opacity: 1; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .hero-gradient { background: linear-gradient(0deg, #0f0f0f 0%, rgba(15,15,15,0) 100%); }
+        .nav-blur { background: rgba(15, 15, 15, 0.8); backdrop-filter: saturate(180%) blur(20px); }
+        
+        .hidden-view { display: none; }
+        .active-view { display: block; }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <nav class="nav-blur fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-8">
+            <h1 onclick="router.navigate('home')" class="text-rose-600 text-3xl font-black tracking-tighter cursor-pointer">FLASH<span class="text-white">ANIME</span></h1>
+            <div class="hidden md:flex gap-6 text-sm font-semibold text-gray-400">
+                <a href="#" onclick="router.navigate('home')" class="hover:text-white transition">Home</a>
+                <a href="#" class="hover:text-white transition">Trending</a>
+                <a href="#" class="hover:text-white transition">Library</a>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="relative">
+                <input type="text" id="searchInput" placeholder="Search anime..." class="bg-zinc-800 text-sm rounded-full py-2 px-10 focus:outline-none focus:ring-2 focus:ring-rose-600 w-48 md:w-64 transition-all">
+                <i class="fa fa-search absolute left-4 top-3 text-gray-500 text-xs"></i>
+            </div>
+            <button onclick="router.navigate('admin-login')" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-rose-600 transition">
+                <i class="fa fa-user-shield"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div id="home-view" class="view active-view pt-20">
+        <div class="relative h-[70vh] w-full overflow-hidden mb-12">
+            <img src="https://images.alphacoders.com/131/1314981.jpeg" class="w-full h-full object-cover">
+            <div class="hero-gradient absolute inset-0 flex flex-col justify-end p-12">
+                <h2 class="text-6xl font-bold mb-4">Demon Slayer: <br>Hashira Training Arc</h2>
+                <p class="max-w-xl text-gray-300 mb-6">Tanjiro goes to see the Stone Hashira, Himejima, who intends to prepare him for the upcoming battles. The training to become a Hashira is intense and demanding.</p>
+                <div class="flex gap-4">
+                    <button class="bg-rose-600 hover:bg-rose-700 px-8 py-3 rounded font-bold transition flex items-center gap-2">
+                        <i class="fa fa-play text-xs"></i> WATCH NOW
+                    </button>
+                    <button class="glass px-8 py-3 rounded font-bold hover:bg-white hover:text-black transition">
+                        <i class="fa fa-plus text-xs mr-2"></i> MY LIST
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-6 md:px-12 space-y-12 pb-20">
+            <section>
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <span class="w-1 h-6 bg-rose-600 rounded"></span> TRENDING NOW
+                </h3>
+                <div id="trending-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+            </section>
+
+            <section>
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <span class="w-1 h-6 bg-rose-600 rounded"></span> POPULAR SERIES
+                </h3>
+                <div id="popular-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+            </section>
+        </div>
+    </div>
+
+    <div id="detail-view" class="view hidden-view pt-24 px-6 md:px-12">
+        <div id="anime-detail-container" class="max-w-6xl mx-auto">
+            </div>
+    </div>
+
+    <div id="watch-view" class="view hidden-view pt-24 px-4">
+        <div class="max-w-5xl mx-auto">
+            <div class="bg-black rounded-xl overflow-hidden aspect-video relative group border border-zinc-800">
+                <div id="video-wrapper" class="w-full h-full">
+                    </div>
+            </div>
+            <div class="mt-6 flex flex-col md:flex-row justify-between items-start gap-4">
+                <div>
+                    <h2 id="watch-title" class="text-2xl font-bold"></h2>
+                    <p id="watch-ep-info" class="text-rose-500 font-semibold"></p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="player.prev()" class="glass p-3 rounded hover:bg-zinc-800"><i class="fa fa-step-backward"></i></button>
+                    <button onclick="player.next()" class="glass p-3 rounded hover:bg-zinc-800"><i class="fa fa-step-forward"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-login-view" class="view hidden-view flex items-center justify-center min-h-screen">
+        <div class="glass p-8 rounded-2xl w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-6 text-center">Admin Access</h2>
+            <input type="password" id="adminPass" placeholder="Enter Secret Code" class="w-full bg-zinc-900 border border-zinc-700 p-3 rounded mb-4">
+            <button onclick="auth.login()" class="w-full bg-rose-600 p-3 rounded font-bold">Login</button>
+        </div>
+    </div>
+
+    <div id="admin-view" class="view hidden-view pt-24 px-6">
+        <div class="max-w-6xl mx-auto bg-zinc-900 p-8 rounded-xl">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold">Content Manager</h2>
+                <button onclick="auth.logout()" class="text-sm text-gray-400 underline">Logout</button>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="space-y-4 glass p-6 rounded-lg">
+                    <h3 class="font-bold text-rose-500 underline">Add New Anime</h3>
+                    <input type="text" id="adm-title" placeholder="Title" class="w-full bg-zinc-800 p-2 rounded">
+                    <input type="text" id="adm-poster" placeholder="Poster URL" class="w-full bg-zinc-800 p-2 rounded">
+                    <textarea id="adm-desc" placeholder="Description" class="w-full bg-zinc-800 p-2 rounded h-24"></textarea>
+                    <button onclick="db.addAnime()" class="bg-rose-600 px-6 py-2 rounded font-bold w-full">Save Anime</button>
+                </div>
+
+                <div class="space-y-4 glass p-6 rounded-lg">
+                    <h3 class="font-bold text-rose-500 underline">Add Episode</h3>
+                    <select id="adm-anime-select" class="w-full bg-zinc-800 p-2 rounded"></select>
+                    <div class="flex gap-2">
+                        <input type="number" id="adm-season" placeholder="Season" class="w-1/2 bg-zinc-800 p-2 rounded">
+                        <input type="number" id="adm-ep-num" placeholder="Ep Number" class="w-1/2 bg-zinc-800 p-2 rounded">
+                    </div>
+                    <input type="text" id="adm-ep-title" placeholder="Episode Title" class="w-full bg-zinc-800 p-2 rounded">
+                    <input type="text" id="adm-ep-url" placeholder="Video URL (MP4 / GDrive Link)" class="w-full bg-zinc-800 p-2 rounded">
+                    <button onclick="db.addEpisode()" class="bg-green-600 px-6 py-2 rounded font-bold w-full">Add Episode</button>
+                </div>
+            </div>
+
+            <div class="mt-12 overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="border-b border-zinc-700 text-gray-400">
+                        <tr>
+                            <th class="p-3">Title</th>
+                            <th class="p-3">Episodes</th>
+                            <th class="p-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /** DATABASE & STORAGE **/
+        const db = {
+            data: JSON.parse(localStorage.getItem('flash_anime_db')) || [],
+            
+            save: () => localStorage.setItem('flash_anime_db', JSON.stringify(db.data)),
+
+            addAnime: () => {
+                const title = document.getElementById('adm-title').value;
+                const poster = document.getElementById('adm-poster').value;
+                const desc = document.getElementById('adm-desc').value;
+                
+                if(!title || !poster) return alert('Fill required fields');
+                
+                const newAnime = {
+                    id: Date.now().toString(),
+                    title,
+                    poster,
+                    desc,
+                    episodes: []
+                };
+                
+                db.data.push(newAnime);
+                db.save();
+                ui.renderAdmin();
+                ui.renderHome();
+                alert('Anime Added!');
+            },
+
+            addEpisode: () => {
+                const animeId = document.getElementById('adm-anime-select').value;
+                const season = document.getElementById('adm-season').value;
+                const epNum = document.getElementById('adm-ep-num').value;
+                const epTitle = document.getElementById('adm-ep-title').value;
+                const url = document.getElementById('adm-ep-url').value;
+
+                const anime = db.data.find(a => a.id === animeId);
+                if(!anime) return;
+
+                anime.episodes.push({
+                    id: Date.now().toString(),
+                    season: parseInt(season),
+                    number: parseInt(epNum),
+                    title: epTitle,
+                    url: url
+                });
+
+                db.save();
+                ui.renderAdmin();
+                alert('Episode Added!');
+            },
+
+            deleteAnime: (id) => {
+                db.data = db.data.filter(a => a.id !== id);
+                db.save();
+                ui.renderAdmin();
+                ui.renderHome();
+            }
+        };
+
+        /** ROUTER SYSTEM **/
+        const router = {
+            currentAnime: null,
+            currentEpIndex: 0,
+
+            navigate: (view, id = null) => {
+                document.querySelectorAll('.view').forEach(v => v.classList.add('hidden-view'));
+                document.getElementById(`${view}-view`).classList.remove('hidden-view');
+                window.scrollTo(0,0);
+
+                if(view === 'detail') ui.renderDetail(id);
+                if(view === 'admin') ui.renderAdmin();
+                if(view === 'home') ui.renderHome();
+            }
+        };
+
+        /** UI ENGINE **/
+        const ui = {
+            renderHome: () => {
+                const trendingList = document.getElementById('trending-list');
+                const popularList = document.getElementById('popular-list');
+                
+                const cardHTML = (anime) => `
+                    <div onclick="router.navigate('detail', '${anime.id}')" class="anime-card group relative cursor-pointer overflow-hidden rounded-lg transition-transform hover:scale-105 duration-300">
+                        <img src="${anime.poster}" class="w-full aspect-[2/3] object-cover">
+                        <div class="play-overlay absolute inset-0 bg-black/60 opacity-0 transition-opacity flex items-center justify-center">
+                             <div class="w-12 h-12 bg-rose-600 rounded-full flex items-center justify-center shadow-lg">
+                                <i class="fa fa-play text-white ml-1"></i>
+                             </div>
+                        </div>
+                        <div class="absolute bottom-0 p-3 w-full bg-gradient-to-t from-black to-transparent">
+                            <p class="font-bold text-sm truncate">${anime.title}</p>
+                            <p class="text-xs text-gray-400">${anime.episodes.length} Episodes</p>
+                        </div>
+                    </div>
+                `;
+
+                trendingList.innerHTML = db.data.slice().reverse().map(cardHTML).join('');
+                popularList.innerHTML = db.data.map(cardHTML).join('');
+            },
+
+            renderDetail: (id) => {
+                const anime = db.data.find(a => a.id === id);
+                router.currentAnime = anime;
+                const container = document.getElementById('anime-detail-container');
+                
+                container.innerHTML = `
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <img src="${anime.poster}" class="w-full md:w-80 rounded-xl shadow-2xl">
+                        <div class="flex-1">
+                            <h1 class="text-5xl font-black mb-4 uppercase tracking-tight">${anime.title}</h1>
+                            <div class="flex gap-4 mb-6">
+                                <span class="bg-rose-600 px-3 py-1 rounded text-xs font-bold uppercase tracking-widest">HD</span>
+                                <span class="text-gray-400 text-sm">Rating: 9.8</span>
+                            </div>
+                            <p class="text-gray-300 leading-relaxed text-lg mb-8">${anime.desc}</p>
+                            
+                            <h3 class="text-xl font-bold mb-4">Episodes</h3>
+                            <div class="grid gap-2">
+                                ${anime.episodes.length > 0 ? anime.episodes.sort((a,b) => a.number - b.number).map((ep, index) => `
+                                    <div onclick="player.play(${index})" class="glass p-4 rounded-lg flex justify-between items-center hover:bg-zinc-800 transition cursor-pointer group">
+                                        <div class="flex items-center gap-4">
+                                            <span class="text-zinc-600 font-bold group-hover:text-rose-500">#${ep.number}</span>
+                                            <span class="font-semibold">${ep.title || 'Episode ' + ep.number}</span>
+                                        </div>
+                                        <i class="fa fa-play-circle text-gray-500 group-hover:text-rose-500"></i>
+                                    </div>
+                                `).join('') : '<p class="text-gray-500 italic">No episodes uploaded yet.</p>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderAdmin: () => {
+                const select = document.getElementById('adm-anime-select');
+                const tbody = document.getElementById('admin-table-body');
+                
+                select.innerHTML = db.data.map(a => `<option value="${a.id}">${a.title}</option>`).join('');
+                
+                tbody.innerHTML = db.data.map(a => `
+                    <tr class="border-b border-zinc-800">
+                        <td class="p-3">${a.title}</td>
+                        <td class="p-3">${a.episodes.length}</td>
+                        <td class="p-3">
+                            <button onclick="db.deleteAnime('${a.id}')" class="text-rose-500 hover:text-rose-400"><i class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        };
+
+        /** PLAYER ENGINE **/
+        const player = {
+            formatLink: (url) => {
+                // Handle Google Drive Links
+                if(url.includes('drive.google.com')){
+                    let id = "";
+                    if(url.includes('id=')) id = url.split('id=')[1].split('&')[0];
+                    else id = url.split('/d/')[1].split('/')[0];
+                    return `https://www.google.com/get_video_info?docid=${id}`; 
+                    // Note: Most GDrive links require iframe embed for reliability due to CORS
+                }
+                return url;
+            },
+
+            play: (index) => {
+                const anime = router.currentAnime;
+                const ep = anime.episodes[index];
+                router.currentEpIndex = index;
+                
+                router.navigate('watch');
+                document.getElementById('watch-title').innerText = anime.title;
+                document.getElementById('watch-ep-info').innerText = `Season ${ep.season} | Episode ${ep.number} - ${ep.title}`;
+
+                const wrapper = document.getElementById('video-wrapper');
+                
+                // Detection if link should be iframe or video tag
+                if(ep.url.includes('drive.google.com') || ep.url.includes('youtube.com') || ep.url.includes('share')){
+                    let embedUrl = ep.url;
+                    if(ep.url.includes('view?usp=sharing')) embedUrl = ep.url.replace('view?usp=sharing', 'preview');
+                    wrapper.innerHTML = `<iframe src="${embedUrl}" class="w-full h-full" allowfullscreen allow="autoplay"></iframe>`;
+                } else {
+                    wrapper.innerHTML = `
+                        <video id="main-video" controls class="w-full h-full" autoplay>
+                            <source src="${ep.url}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    `;
+                }
+            },
+
+            next: () => {
+                if(router.currentEpIndex < router.currentAnime.episodes.length - 1) {
+                    player.play(router.currentEpIndex + 1);
+                }
+            },
+            
+            prev: () => {
+                if(router.currentEpIndex > 0) {
+                    player.play(router.currentEpIndex - 1);
+                }
+            }
+        };
+
+        /** AUTH SYSTEM **/
+        const auth = {
+            login: () => {
+                const pass = document.getElementById('adminPass').value;
+                if(pass === "flash123") {
+                    router.navigate('admin');
+                } else {
+                    alert('Wrong code!');
+                }
+            },
+            logout: () => router.navigate('home')
+        };
+
+        /** SEARCH LOGIC **/
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.anime-card');
+            cards.forEach(card => {
+                const title = card.querySelector('p').innerText.toLowerCase();
+                card.style.display = title.includes(query) ? 'block' : 'none';
+            });
+        });
+
+        /** LISTEN FOR ADMIN HASH **/
+        window.addEventListener('hashchange', () => {
+            if(window.location.hash === '#flash-admin') {
+                router.navigate('admin-login');
+            }
+        });
+
+        // Check hash on load
+        if(window.location.hash === '#flash-admin') router.
